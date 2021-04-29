@@ -1,4 +1,4 @@
-import core.Flights
+import core.search
 import io.ktor.application.call
 import io.ktor.html.respondHtml
 import io.ktor.http.HttpStatusCode
@@ -9,8 +9,9 @@ import io.ktor.http.content.static
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.html.*
-import java.time.LocalDateTime
 import java.util.*
 
 fun HTML.index() {
@@ -36,6 +37,8 @@ data class Flight(
 )
 
 fun main() {
+    val s = search( "CGK", "NRT")
+    println(s)
     embeddedServer(Netty, port = 8080, host = "127.0.0.1") {
         routing {
             get("/") {
