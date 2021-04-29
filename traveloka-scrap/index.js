@@ -17,7 +17,7 @@ const fs = require('fs');
         if (iataDepart === iataArriv) continue;
         while (true) {
           try {
-            await page.goto(`https://www.traveloka.com/en-id/flight/fullsearch?ap=${iataArriv}.${iataDepart}&dt=0${dayOfMonth}-06-2021.NA&ps=1.0.0&sc=ECONOMY`, {
+            await page.goto(`https://www.traveloka.com/en-id/flight/fullsearch?ap=${iataDepart}.${iataArriv}&dt=0${dayOfMonth}-06-2021.NA&ps=1.0.0&sc=ECONOMY`, {
               waitUntil: 'networkidle2',
               timeout: 50000,
             });
