@@ -1,8 +1,6 @@
-import com.github.gradle.node.npm.task.NpmTask
-
 plugins {
-    id("com.github.node-gradle.node") version "3.0.1"
     kotlin("multiplatform") version "1.4.10"
+    kotlin("kapt") version "1.4.32"
     application
 }
 
@@ -16,9 +14,8 @@ repositories {
     maven { url = uri("https://dl.bintray.com/kotlin/ktor") }
 }
 
-node {
-    workDir.set(file("${project.buildDir}/nodejs"))
-    npmWorkDir.set(file("${project.buildDir}/npm"))
+application {
+    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=true")
 }
 
 kotlin {
@@ -34,10 +31,18 @@ kotlin {
     sourceSets {
         val jvmMain by getting {
             dependencies {
+                implementation("com.squareup.moshi:moshi:1.12.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.1")
                 implementation("io.ktor:ktor-server-netty:1.4.0")
                 implementation("io.ktor:ktor-html-builder:1.4.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.2")
+                configurations.get("kapt").dependencies.add(
+                    org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency(
+                        "com.squareup.moshi",
+                        "moshi-kotlin-codegen",
+                        "1.12.0"
+                    )
+                )
             }
         }
         val jvmTest by getting {
@@ -50,15 +55,4 @@ kotlin {
 
 application {
     mainClassName = "ServerKt"
-}
-
-tasks.getByName<JavaExec>("run") {
-    dependsOn(tasks.getByName<Jar>("jvmJar"))
-    classpath(tasks.getByName<Jar>("jvmJar"))
-}
-
-tasks.register<NpmTask>("uiRun") {
-    description = "Builds project"
-    workingDir.set(file("${project.projectDir}/src/ui"))
-    args.set(listOf("run", "start"))
 }

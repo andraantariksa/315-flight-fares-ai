@@ -5,7 +5,7 @@ const fs = require('fs');
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
 
-  const iatas = 'CGK,HLP,DPS'.split(','); //,HLP,SUB,DPS,JOG,YIA,NRT,HKG,SIN,KUL
+  const iatas = 'CGK,HLP,DPS'.split(','); //CGK,HLP,SUB,DPS,JOG,YIA,NRT,HKG,SIN,KUL
   const resps = [];
   const flightDatas = {};
 

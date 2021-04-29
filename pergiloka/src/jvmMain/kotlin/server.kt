@@ -1,3 +1,4 @@
+import core.Flights
 import io.ktor.application.call
 import io.ktor.html.respondHtml
 import io.ktor.http.HttpStatusCode
@@ -25,17 +26,13 @@ fun HTML.index() {
 }
 
 data class FlightSearchData(
-    val dateFrom: Date,
+    val date: Date,
     val airportDeparture: String,
     val airportArrival: String,
 )
 
 data class Flight(
     val datetime: LocalDateTime
-)
-
-data class FlightsResult(
-    val flights: Array<Flight>
 )
 
 fun main() {
