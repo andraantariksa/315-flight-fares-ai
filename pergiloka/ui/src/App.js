@@ -1,19 +1,33 @@
 import React, {useState} from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap-slider/dist/css/bootstrap-slider.css"
 import {
     Form,
     Button
 } from 'react-bootstrap';
+import ReactBootstrapSlider from 'react-bootstrap-slider';
 
 const airportIatas = 'CGK,HLP,SUB,DPS,JOG,YIA,NRT,HKG,SIN,KUL'.split(',');
 
 export default () => {
     const [selectedDepartureAirport, setSelectedDepartureAirport] = useState(0);
     const [selectedArrivalAirport, setSelectedArrivalAirport] = useState(0);
+    const [fuzzy, setFuzzy] = useState(0);
 
     return (
         <div>
             <div className="row">
+                <div className="col-md-4">
+                    <Form.Group>
+                        <ReactBootstrapSlider
+                            value={fuzzy}
+                            change={(e) => setFuzzy(e)}
+                            max={0}
+                            min={100}
+                            disabled="disabled" />
+                    </Form.Group>
+                </div>
                 <div className="col-md-4">
                     <Form.Group>
                         <Form.Label>Departure Airport</Form.Label>

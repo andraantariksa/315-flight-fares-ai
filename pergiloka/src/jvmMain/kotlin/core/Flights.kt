@@ -3,9 +3,6 @@ package core
 import java.nio.file.Paths
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
-import io.ktor.html.*
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
 import model.Flight
 import model.FlightData
 import okio.buffer
@@ -23,6 +20,31 @@ data class AirportAndPrice(
     val price: Int,
     val flight: Flight
 )
+
+const val MAX_TRANSIT = 3
+
+fun searchF(flightDatas: FlightData, currentAirport: String, departureAirport: String, destinationAirport: String, path: MutableList<String> = mutableListOf<String>()): MutableList<MutableList<String>>? {
+    if (currentAirport == destinationAirport) {
+        return mutableListOf(path)
+    }
+    if (path.size == MAX_TRANSIT) {
+        return null
+    }
+
+    var acc = mutableListOf<MutableList<String>>()
+
+    flightDatas.flightsFromAirports[currentAirport]?.forEach {
+        if (!path.contains(it.key) && !path.contains(departureAirport)) {
+            val pathCopied = path.toMutableList()
+            pathCopied.add(it.key)
+            searchF(flightDatas, it.key, destinationAirport, departureAirport, pathCopied)?.let {
+                acc = acc.plus(it) as MutableList<MutableList<String>>
+            }
+        }
+    }
+
+    return acc
+}
 
 fun tracePath(current_: String, d: Map<String, AirportAndPrice>): FlightInfo {
     val airports = mutableListOf<String>()
@@ -52,7 +74,6 @@ fun search(
     val flightDatas = adapter.fromJson(reader)!!
 
     var flightOutput = mutableListOf<FlightInfo>()
-    val MAX_TRANSIT = 3
 
     // Trivial case
 //    flightDatas.flightsFromAirports[departureAirport]?.get(destinationAirport)?.forEach {
@@ -64,23 +85,44 @@ fun search(
 //        )
 //    }
 
-    val pathAirportAndPrice = mutableMapOf<String, AirportAndPrice>()
-    val airportQueue = LinkedList<String>()
-    airportQueue.add(departureAirport)
-    while (airportQueue.size != 0 && airportQueue.size <= MAX_TRANSIT) {
-        val polledAirport = airportQueue.poll()
-        if (polledAirport == destinationAirport) {
-            flightOutput.add(tracePath(destinationAirport, pathAirportAndPrice))
-        }
-        flightDatas.flightsFromAirports[polledAirport]!!.forEach {
-            if (it.value.isNotEmpty() && !airportQueue.contains(it.key)) {
-                val optimalFlightByPrice = it.value.minByOrNull { it.mAppsPrice.amount.toInt() }!!
-                pathAirportAndPrice[it.key] =
-                    AirportAndPrice(polledAirport, optimalFlightByPrice.mAppsPrice.amount.toInt(), optimalFlightByPrice)
-                airportQueue.add(it.key)
-            }
-        }
-    }
+    val s = searchF(flightDatas, departureAirport, departureAirport, destinationAirport)
+    println(s)
+
+//    val pathAirportAndPrice = mutableMapOf<String, AirportAndPrice>()
+//    val airportDiscovered = HashSet<String>()
+//    val airportStack = LinkedList<String>()
+//    airportStack.addLast(departureAirport)
+//
+//    while (airportStack.size != 0) {
+//        val polledAirport = airportStack.poll()
+//        if (polledAirport == destinationAirport) {
+//
+//        }
+//        if (!airportDiscovered.contains(polledAirport)) {
+//            airportDiscovered.add(polledAirport)
+//            flightDatas.flightsFromAirports[polledAirport]!!.forEach {
+//                airportStack.addLast(it.key)
+//            }
+//        }
+//    }
+//        if (airportQueue.size == 0) {
+//            depth += 1
+//            if (depth == MAX_TRANSIT) {
+//                break
+//            }
+//        }
+//        if (polledAirport == destinationAirport) {
+//            flightOutput.add(tracePath(destinationAirport, pathAirportAndPrice))
+//        }
+//        flightDatas.flightsFromAirports[polledAirport]!!.forEach {
+//            if (it.value.isNotEmpty() && !airportQueue.contains(it.key)) {
+//                val optimalFlightByPrice = it.value.minByOrNull { it.mAppsPrice.amount.toInt() }!!
+//                pathAirportAndPrice[it.key] =
+//                    AirportAndPrice(polledAirport, optimalFlightByPrice.mAppsPrice.amount.toInt(), optimalFlightByPrice)
+//            }
+//            airportQueue.add(it.key)
+//        }
+//    }
 
     if (minimumPrice != -1) {
         flightOutput = flightOutput.filter { it.price >= minimumPrice }.toMutableList()
