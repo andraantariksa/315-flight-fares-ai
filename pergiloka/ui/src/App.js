@@ -117,7 +117,7 @@ export default () => {
                 {
                     (result === null) ? null : result.flightInfos.map((v) =>
                         <Card>
-                            <Card.Title>Rp. {v.price}</Card.Title>
+                            <Card.Title>Rp. {v.price} - {v.travelTimeMinute} min est</Card.Title>
                             <Card.Body>
                                 Route: {airportIatas[selectedDepartureAirport]}{v.flights.map((v2) => `-${v2.flightMetadata[v2.flightMetadata.length - 1].destinationAirport}`)}
                             </Card.Body>

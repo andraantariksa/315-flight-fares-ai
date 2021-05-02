@@ -14,8 +14,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
+import java.time.LocalDate
 import kotlinx.html.*
 import model.Flight
 import java.util.*
@@ -79,7 +78,7 @@ fun main() {
                 val moshi = Moshi.Builder().build()
                 val jsonAdapter: JsonAdapter<FlightResult> = moshi.adapter<FlightResult>(FlightResult::class.java)
 
-                val s = search(airportDeparture, airportArrival, fuzzyChoice)
+                val s = search(departureDate, airportDeparture, airportArrival, fuzzyChoice)
                 call.respond(jsonAdapter.toJson(FlightResult(s as List<FlightInfo>)))
             }
             static("/static") {

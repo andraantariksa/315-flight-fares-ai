@@ -4,6 +4,8 @@ import com.squareup.moshi.JsonClass
 import java.nio.file.Paths
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
+import customDateToString
+import java.time.LocalDate
 import model.Flight
 import model.FlightData
 import okio.buffer
@@ -12,7 +14,8 @@ import okio.source
 @JsonClass(generateAdapter = true)
 data class FlightInfo(
     val flights: List<Flight>,
-    val price: Int
+    val price: Int,
+    val travelTimeMinute: Int
 )
 
 fun mostOptimumFlight(flights: List<Flight>): Flight {
@@ -51,40 +54,37 @@ fun searchF(
 }
 
 fun search(
+    date: LocalDate,
     departureAirport: String,
     destinationAirport: String,
     fuzzyTimeAndPrice: Float,
     minimumPrice: Int = -1
 ): MutableList<FlightInfo> {
-    val reader = JsonReader.of(Paths.get("/home/andra/Downloads/output-20210601.json").toFile().source().buffer())
+    val reader = JsonReader.of(Paths.get("/home/andra/Downloads/traveloka-scrap/output-${customDateToString(date)}.json").toFile().source().buffer())
     val moshi = Moshi.Builder().build()
     val adapter = moshi.adapter(FlightData::class.java)
     val flightDatas = adapter.fromJson(reader)!!
 
     var flightOutput = mutableListOf<FlightInfo>()
 
-    // Trivial case
-    flightDatas.flightsFromAirports[departureAirport]?.get(destinationAirport)?.forEach {
-        flightOutput.add(
-            FlightInfo(
-                mutableListOf(it),
-                it.mAppsPrice.amount.toInt()
-            )
-        )
-    }
-
     val s = searchF(flightDatas, departureAirport, departureAirport, destinationAirport)
     s?.forEach {
         var price = 0
+        var travelTimeMinute = 0
         val flights = mutableListOf<Flight>()
         it.forEach { it2 ->
             flights.add(it2.second)
             price += it2.second.mAppsPrice.amount.toInt()
+            travelTimeMinute += it2.second.connectingFlightRoutes.fold(0) { acc, e ->
+                val result: Int = e.segments.fold(0) { acc2, e2 -> acc2 + e2.durationMinute.toInt() }
+                acc + result
+            }
         }
         flightOutput.add(
             FlightInfo(
                 flights,
-                price
+                price,
+                travelTimeMinute
             )
         )
     }
@@ -93,7 +93,12 @@ fun search(
         flightOutput = flightOutput.filter { it.price >= minimumPrice }.toMutableList()
     }
 
-    flightOutput.sortBy { it.price }
+    val (fuzzyCat, percentage) = fuzzy(fuzzyTimeAndPrice)
+    if (fuzzyCat == FuzzyType.Price) {
+        flightOutput.sortBy { it.price }
+    } else {
+        flightOutput.sortBy { it.travelTimeMinute }
+    }
 
     return flightOutput
 }

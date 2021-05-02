@@ -6,7 +6,7 @@ enum class FuzzyType {
 }
 
 fun fuzzy(x_: Float): Pair<FuzzyType, Float> {
-    if (x_ <= 0.5f) {
+    if (x_ < 0.5f) {
         val x = x_ * 2.0f
         return Pair(FuzzyType.TravelTime, x)
     } else {
